@@ -20,6 +20,7 @@ using namespace  ::cs;
 class authServeHandler : virtual public cs::authServeIf {
  public:
   authServeHandler() {
+      logInfo << "Initializing server";
     // Your initialization goes here
     //TODO: Connect to DB
   }

@@ -1,12 +1,11 @@
 #ifndef __Log_h__
 #define __Log_h__
 
+#include <iostream>
+
 class Log 
 {
     public:
-        Log(Level lev);
-        ~Log();
-
     enum Level 
     {
         DEBUG,
@@ -14,12 +13,18 @@ class Log
         ERROR
     };
 
+
+
+        Log(Level lev);
+        ~Log();
+
+
         
 
     static void log(Level lev, const std::string& message);
     static std::string levelToString(Level level);
 
-    std::istream& operator<<(std::istream&, const std::string& msg);
+    void operator<<(const std::string& msg);
 
     private:
         Level _level;

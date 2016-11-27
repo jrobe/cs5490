@@ -1,6 +1,13 @@
 #include "Log.h"
 
 
+#include <ctime>
+
+Log __debugLog(Log::DEBUG);
+Log __errorLog(Log::ERROR);
+Log __infoLog(Log::INFO);
+
+
 Log::Log(Level lev)
 : _level(lev)
 {
@@ -26,9 +33,14 @@ std::string Log::levelToString(Level level)
 void Log::log(Level lev, const std::string& message)
 {
     //For now
-    std::cout << levelToString(lev) << ": " << message << std::endl;
+    time_t now;
+    time(&now);
+    char buf[sizeof"1991-03-18T07:08:09Z"];
+    strftime(buf,sizeof(buf),"%FT%TZ",gmtime(&now));
+    std::cout << buf << " " << levelToString(lev) << ": " << message << std::endl;
 }
-std::istream& Log::operator<<(std::istream&, const std::string& msg)
+void Log::operator<<(const std::string& msg)
 {
     log(_level,msg);
 }
+
