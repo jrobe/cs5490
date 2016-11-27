@@ -6,6 +6,7 @@
 #include "../generated/cs5490_constants.h"
 
 //Other
+#include "AuthDB.h"
 #include "Log.h"
 
 //Thrift libraries
@@ -27,12 +28,15 @@ using namespace  ::cs;
 
 class AuthServeHandler : virtual public cs::AuthServeIf {
 
- public:
-    //obj man
-    AuthServeHandler();
+    public:
+        //obj man
+        AuthServeHandler();
 
-    //Thrift Functions
-    void createAccount(std::string& _return, const std::string& userName, const std::map<std::string, std::string> & keyValues);
+        //Thrift Functions
+        void createAccount(std::string& _return, const std::string& userName, const std::map<std::string, std::string> & keyValues);
+
+    private:
+        AuthDB _db;
 
 };
 
