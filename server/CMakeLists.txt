@@ -7,7 +7,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 FIND_PACKAGE(Thrift)
 FIND_PACKAGE( Boost COMPONENTS thread system REQUIRED)
 
-ADD_CUSTOM_COMMAND(OUTPUT generated/sanity.cpp generated/cs5490_types.cpp generated/cs5490_constants.cpp
+ADD_CUSTOM_COMMAND(OUTPUT generated/authServe.cpp generated/cs5490_types.cpp generated/cs5490_constants.cpp
                    COMMAND ${THRIFT_COMPILER} -gen cpp -o generated/ ${CMAKE_CURRENT_SOURCE_DIR}/../thrift/cs5490.thrift 
                    COMMAND mv ${CMAKE_CURRENT_SOURCE_DIR}/generated/gen-cpp/* ${CMAKE_CURRENT_SOURCE_DIR}/generated
                    COMMAND rmdir ${CMAKE_CURRENT_SOURCE_DIR}/generated/gen-cpp
@@ -19,6 +19,6 @@ set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES cs5490.thrift)
 set(CMAKE_CXX_STANDARD 11)
 add_definitions(-g)
 
-add_executable(server src/main.cxx generated/sanity.cpp generated/cs5490_types.cpp generated/cs5490_constants.cpp)
+add_executable(server src/main.cxx src/Log.cxx generated/authServe.cpp generated/cs5490_types.cpp generated/cs5490_constants.cpp)
 include_directories(${THRIFT_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
 target_link_libraries(server ${THRIFT_LIB} ${Boost_LIBRARIES})

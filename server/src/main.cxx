@@ -1,7 +1,8 @@
 #include <iostream>
 
 //Thrift
-#include "../generated/sanity.h"
+#include "../generated/authServe.h"
+#include "Log.h"
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/server/TSimpleServer.h>
 #include <thrift/transport/TServerSocket.h>
@@ -16,15 +17,16 @@ using namespace ::apache::thrift::server;
 
 using namespace  ::cs;
 
-class sanityHandler : virtual public cs::sanityIf {
+class authServeHandler : virtual public cs::authServeIf {
  public:
-  sanityHandler() {
+  authServeHandler() {
     // Your initialization goes here
+    //TODO: Connect to DB
   }
 
-  void sanityCheck(std::string& _return) {
+  void createAccount(std::string& _return, const std::string& userName, const std::map<std::string, std::string> & keyValues) {
     // Your implementation goes here
-    _return = "SanityCheckNow";
+    logDebug << "Called create Account";
   }
 
 };
@@ -41,8 +43,8 @@ int main()
     factory->loadPrivateKey("../ssl/server.key");
 
     int port = 9090;
-    boost::shared_ptr<sanityHandler> handler(new sanityHandler());
-    boost::shared_ptr<TProcessor> processor(new sanityProcessor(handler));
+    boost::shared_ptr<authServeHandler> handler(new authServeHandler());
+    boost::shared_ptr<TProcessor> processor(new authServeProcessor(handler));
     boost::shared_ptr<TServerTransport> serverTransport(new TSSLServerSocket(port,factory));
     boost::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
     boost::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
