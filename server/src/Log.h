@@ -13,12 +13,8 @@ class Log
         ERROR
     };
 
-
-
         Log(Level lev);
         ~Log();
-
-
         
 
     static void log(Level lev, const std::string& message);
@@ -28,9 +24,6 @@ class Log
 
     private:
         Level _level;
-
-
-
 
 };
 

@@ -1,7 +1,7 @@
 namespace cpp cs
 
 
-service authServe
+service AuthServe
 {
     binary createAccount(1: string userName, 2: map<string,string> keyValues),
 

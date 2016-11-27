@@ -1,8 +1,10 @@
 #include <iostream>
 
-//Thrift
-#include "../generated/authServe.h"
+//Other
 #include "Log.h"
+#include "AuthServeHandler.h"
+
+//Thrift libraries
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/server/TSimpleServer.h>
 #include <thrift/transport/TServerSocket.h>
@@ -10,27 +12,14 @@
 #include <thrift/transport/TSSLServerSocket.h>
 #include <thrift/transport/TBufferTransports.h>
 
+#include <tuple>
+
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
 using namespace ::apache::thrift::transport;
 using namespace ::apache::thrift::server;
 
 using namespace  ::cs;
-
-class authServeHandler : virtual public cs::authServeIf {
- public:
-  authServeHandler() {
-      logInfo << "Initializing server";
-    // Your initialization goes here
-    //TODO: Connect to DB
-  }
-
-  void createAccount(std::string& _return, const std::string& userName, const std::map<std::string, std::string> & keyValues) {
-    // Your implementation goes here
-    logDebug << "Called create Account";
-  }
-
-};
 
 int main()
 {
@@ -44,8 +33,8 @@ int main()
     factory->loadPrivateKey("../ssl/server.key");
 
     int port = 9090;
-    boost::shared_ptr<authServeHandler> handler(new authServeHandler());
-    boost::shared_ptr<TProcessor> processor(new authServeProcessor(handler));
+    boost::shared_ptr<AuthServeHandler> handler(new AuthServeHandler());
+    boost::shared_ptr<TProcessor> processor(new AuthServeProcessor(handler));
     boost::shared_ptr<TServerTransport> serverTransport(new TSSLServerSocket(port,factory));
     boost::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
     boost::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
