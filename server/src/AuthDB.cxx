@@ -145,10 +145,8 @@ bool AuthDB::_execute(sqlite3_stmt* stmt)
 
 }
 
-std::string AuthDB::insertUser(const std::string& user, const std::string& encryptedData)
+bool AuthDB::_checkIfUserExists(const std::string& user)
 {
-    logDebug << "Inserting user into the database...";
-    //Check if user exists first
     std::promise<bool> existPromise;
     auto fut = existPromise.get_future();
     _currentHandler = [&existPromise] (int argc, char** argv, char**)
@@ -165,36 +163,90 @@ std::string AuthDB::insertUser(const std::string& user, const std::string& encry
     std::string checkStmt = ss.str();
     if(_execute(checkStmt))
     {
-        if(fut.get() == true)
-        {
-            logError << "User already exists!";
-            return "User already exists!";
-        }
-        else
-        {
-            logDebug << "User didn't exist, inserting";
-            resetHandler;
-            sqlite3_stmt* insertStmt = NULL;
-            std::string insert = "INSERT INTO users VALUES (?1,?2);";
-            sqlite3_prepare_v2(_db,insert.c_str(),-1,&insertStmt,NULL);
-            assert(insertStmt);
-            sqlite3_bind_text(insertStmt,1,user.c_str(),-1,SQLITE_STATIC);
-            sqlite3_bind_text(insertStmt,2,encryptedData.c_str(),-1,SQLITE_STATIC);
-            if(!_execute(insertStmt))
-            {
-                logError << "Failed to insert user!"; 
-                return "Failed to insert user";
-            }
-            else
-            {
-                logDebug << "User inserted";
-                return "";
-            }
-        }
+        return fut.get();
     }
     else
     {
-        return "INTERNAL ERROR: Failed to check for user";
+        logError << "Internal error when checking for existing user";
+        return false;
+    }
+
+}
+
+std::string AuthDB::insertUser(const std::string& user, const std::string& encryptedData)
+{
+    logDebug << "Inserting user into the database...";
+    //Check if user exists first
+    if(_checkIfUserExists(user))
+    {
+        logError << "User already exists!";
+        return "User already exists!";
+    }
+    else
+    {
+        logDebug << "User didn't exist, inserting";
+        resetHandler;
+        sqlite3_stmt* insertStmt = NULL;
+        std::string insert = "INSERT INTO users VALUES (?1,?2);";
+        sqlite3_prepare_v2(_db,insert.c_str(),-1,&insertStmt,NULL);
+        assert(insertStmt);
+        sqlite3_bind_text(insertStmt,1,user.c_str(),-1,SQLITE_STATIC);
+        sqlite3_bind_text(insertStmt,2,encryptedData.c_str(),-1,SQLITE_STATIC);
+        if(!_execute(insertStmt))
+        {
+            logError << "Failed to insert user!"; 
+            return "Failed to insert user";
+        }
+        else
+        {
+            logDebug << "User inserted";
+            return "";
+        }
+    }
+
+}
+char* AuthDB::getEncryptedUserData(const std::string& user,int& len)
+{
+    std::promise<std::string> existPromise;
+    auto fut = existPromise.get_future();
+    if(!_checkIfUserExists(user))
+    {
+        logError << "User didn't exist when attempting to get user data";
+        return nullptr;
+    }
+    _currentHandler = [&existPromise] (int argc, char** argv, char**)
+    {
+        logDebug << "Handler called";
+        assert(argc == 1);
+        logDebug << std::string("resulting data: ") + argv[0];
+        existPromise.set_value(std::string(argv[0]));
+    };
+
+    logDebug << "Grabbing encrypted user Data";
+    resetHandler;
+    sqlite3_stmt* stmt = nullptr;
+    std::string stmtStr = "SELECT data from users WHERE userName = ?1";
+    sqlite3_prepare_v2(_db,stmtStr.c_str(),-1,&stmt,NULL);
+
+    assert(stmt);
+
+    sqlite3_bind_text(stmt,1,user.c_str(),-1,SQLITE_STATIC);
+    if(!_execute(stmt))
+    {
+        logError << "Failed to get user data!";
+        return nullptr;
+    }
+    else
+    {
+        //Got data
+        logDebug << "Data retrieved from database";
+        std::string outData = fut.get();
+        char* out = new char[outData.size() + 1];
+        memcpy(out,outData.c_str(),outData.size());
+        out[outData.size()] = '\0';
+        len = outData.size();
+        return out;
+
     }
 
 }

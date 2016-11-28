@@ -7,13 +7,16 @@
 #include <openssl/pem.h>
 #include <openssl/x509.h>
 
+typedef unsigned char byte;
+
 struct Utils
 {
 
-    static char* encrypt(char* data, int dataLen, char* key, int keyLen, int& outLen);
-    static char* decrypt(char* data, int dataLen, char* key, int keyLen, int& outLen);
-    static std::string hex(char* data,int len);
-    static char* generateRandom(int size);
+    static byte* encrypt(byte* data, int dataLen, byte* key, int keyLen, int& outLen);
+    static byte* decrypt(byte* data, int dataLen, byte* key, int keyLen, int& outLen);
+    static std::string hex(byte* data,int len);
+    static byte* generateRandom(int size);
+    static byte* fromHex(const char* data,int len, int& outLen);
 };
 
 #endif

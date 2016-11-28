@@ -28,11 +28,11 @@ void AuthServeHandler::createAccount(std::string& _return, const std::string& us
         //Could do JSON; lazy
         ss << it->first << ":" << it->second << ";";
     }
-    char* key = Utils::generateRandom(32);
+    byte* key = Utils::generateRandom(32);
     std::string data = ss.str();
     int outLen = 0;
 
-    char* encrypted = Utils::encrypt((char*)data.c_str(),data.size()+1,key,32,outLen);
+    byte* encrypted = Utils::encrypt((byte*)data.c_str(),data.size()+1,key,32,outLen);
 
     std::string encryptedStr = std::string(Utils::hex(encrypted,outLen));
     //Store everything hex to be easy
@@ -40,8 +40,8 @@ void AuthServeHandler::createAccount(std::string& _return, const std::string& us
 #ifdef DEBUGMODE
     logDebug << "Performing decryption sanity";
     int decLen = 0;
-    char* decrypted = Utils::decrypt((char*)encrypted,outLen,key,32,decLen);
-    std::string decStr = std::string(decrypted);
+    byte* decrypted = Utils::decrypt(encrypted,outLen,key,32,decLen);
+    std::string decStr = std::string((char*)decrypted);
     delete[] decrypted;
     logDebug << std::string("Decrypt sanity: ") + decStr;
 #endif
@@ -50,8 +50,7 @@ void AuthServeHandler::createAccount(std::string& _return, const std::string& us
     logDebug << std::string("Database returned error: ") + errFromDb;
     if(errFromDb.size() == 0)
     {
-        //_return = Utils::hex(key,32);
-        _return = std::string(key,32);
+        _return = Utils::hex(key,32);
     }
     else
     {
@@ -66,4 +65,11 @@ void AuthServeHandler::createAccount(std::string& _return, const std::string& us
     delete[] encrypted;
     delete[] key;
 }
+
+void AuthServeHandler::retrieveWithKey(std::map<std::string, std::string> & _return, const std::string& userName, const std::string& key) {
+    // Your implementation goes here
+    logDebug << "Retrieving from the database with a key";
+    int len = 0 ;
+    char* encryptedData = _db.getEncryptedUserData(userName,len);
+  }
 

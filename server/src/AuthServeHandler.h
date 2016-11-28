@@ -34,6 +34,7 @@ class AuthServeHandler : virtual public cs::AuthServeIf {
 
         //Thrift Functions
         void createAccount(std::string& _return, const std::string& userName, const std::map<std::string, std::string> & keyValues);
+        void retrieveWithKey(std::map<std::string, std::string> & _return, const std::string& userName, const std::string& key);
 
     private:
         AuthDB _db;
