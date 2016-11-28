@@ -28,4 +28,7 @@ client = AuthServe.Client(proto)
 trans.open()
 byteIn = client.createAccount("testing", {'email':'testing@test.com'})
 print binascii.hexlify(bytearray(byteIn))
+print client.retreiveWithKey
+
 trans.close()
+

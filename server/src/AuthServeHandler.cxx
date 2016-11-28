@@ -68,11 +68,50 @@ void AuthServeHandler::createAccount(std::string& _return, const std::string& us
 
 void AuthServeHandler::retrieveWithKey(std::map<std::string, std::string> & _return, const std::string& userName, const std::string& key) 
 {
-    // Your implementation goes here
+    //Key should be in hex
+
+    int keyLen = 0;
+    byte* rawKey = Utils::fromHex(key.c_str(),key.size(),keyLen);
+    assert(keyLen == 32);
+
     logDebug << "Retrieving from the database with a key";
     int len = 0 ;
     char* encryptedData = _db.getEncryptedUserData(userName,len); //hex
-    _return = std::string(encryptedData,len);
+    int outLen = 0;;
+    byte* encryptedRaw = Utils::fromHex(encryptedData,len,outLen);
+    int decLen = 0;
+    byte* decrypted = Utils::decrypt((byte*)encryptedRaw,outLen,rawKey,32,decLen); 
+
+/*
+    std::string decryptedStr(decrypted);
+    std::istringstream ssi(decryptedStr);
+    std::string token;
+    while(std::getline(ssi,token,";"))
+    {
+        logDebug << token;
+    }
+    */
+    //_return = std::string(encryptedData,len);
 
 }
 
+
+void AuthServeHandler::requestPermission(PermissionRequest& _return, const std::string& userName) {
+    // Your implementation goes here
+    printf("requestPermission\n");
+}
+
+void AuthServeHandler::checkForPermissionRequests(std::vector<PermissionRequest> & _return) {
+    // Your implementation goes here
+    printf("checkForPermissionRequests\n");
+}
+
+void AuthServeHandler::decideRequest(const PermissionRequest& request, const bool decision, const std::string& reason, const std::string& key) {
+    // Your implementation goes here
+    printf("decideRequest\n");
+}
+
+void AuthServeHandler::checkForPermissionGranted(PermissionRequest& _return, const int64_t requestID) {
+    // Your implementation goes here
+    printf("checkForPermissionGranted\n");
+}

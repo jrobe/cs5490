@@ -35,6 +35,10 @@ class AuthServeHandler : virtual public cs::AuthServeIf {
         //Thrift Functions
         void createAccount(std::string& _return, const std::string& userName, const std::map<std::string, std::string> & keyValues);
         void retrieveWithKey(std::map<std::string, std::string> & _return, const std::string& userName, const std::string& key);
+        void requestPermission(PermissionRequest& _return, const std::string& userName);
+        void checkForPermissionRequests(std::vector<PermissionRequest> & _return);
+        void decideRequest(const PermissionRequest& request, const bool decision, const std::string& reason, const std::string& key);
+        void checkForPermissionGranted(PermissionRequest& _return, const int64_t requestID);
 
     private:
         AuthDB _db;
