@@ -7,6 +7,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 FIND_PACKAGE(Thrift)
 FIND_PACKAGE( Boost COMPONENTS thread system REQUIRED)
 Find_package(SQLite3)
+find_package(OpenSSL)
+#find_package(ssl)
 #FIND_PACKAGE(PQxx)
 
 ADD_CUSTOM_COMMAND(OUTPUT generated/AuthServe.cpp generated/cs5490_types.cpp generated/cs5490_constants.cpp
@@ -20,9 +22,10 @@ set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES cs5490.thrift)
 #Can't use C++11; std::tuple clashes with libpqxx because reasons.
 set(CMAKE_CXX_STANDARD 11)
 add_definitions(-g)
+add_definitions(-DDEBUGMODE)
 
-add_executable(server src/main.cxx src/Log.cxx src/AuthDB.cxx src/AuthServeHandler.cxx generated/AuthServe.cpp generated/cs5490_types.cpp generated/cs5490_constants.cpp)
+add_executable(server src/main.cxx src/Utils.cxx src/Log.cxx src/AuthDB.cxx src/AuthServeHandler.cxx generated/AuthServe.cpp generated/cs5490_types.cpp generated/cs5490_constants.cpp)
 #include_directories(${THRIFT_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${Pqxx_INCLUDE_DIRS})
 #target_link_libraries(server ${THRIFT_LIB} ${Boost_LIBRARIES} ${Pqxx_LIBRARIES})
-include_directories(${THRIFT_INCLUDE_DIR} ${Boost_INCLUDE_DIRS}  ${SQLITE3_INCLUDE_DIR})
-target_link_libraries(server ${THRIFT_LIB} ${Boost_LIBRARIES} ${SQLITE3_LIBRARIES} ) 
+include_directories(${THRIFT_INCLUDE_DIR} ${Boost_INCLUDE_DIRS}  ${SQLITE3_INCLUDE_DIR} ${OPENSSL_INCLUDE_DIR})
+target_link_libraries(server ${THRIFT_LIB} ${Boost_LIBRARIES} ${SQLITE3_LIBRARIES} ${OPENSSL_LIBRARIES} ) 

@@ -7,6 +7,8 @@
 #include <sstream>
 #include <vector>
 
+#include "Utils.h"
+
 //Horrible; forces this to be a singleton
 //Single threaded at that.
 std::function<void (int,char**,char**)> AuthDB::_currentHandler = [] (int,char**,char**) {};
