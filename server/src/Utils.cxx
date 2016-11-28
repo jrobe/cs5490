@@ -84,12 +84,13 @@ char* Utils::decrypt(char* data, int dataLen, char* key, int keyLen, int& outLen
 }
 std::string Utils::hex(char* data,int len)
 {
-    std::stringstream ss;
+    char buff[(len * 2) +1];
     for(int i = 0; i < len; i++)
     {
-        ss << std::hex << (int)data[i];
+        sprintf(buff + (i * 2),"%02X",data[i]);
     }
-    return ss.str();
+    buff[len*2] = '\0';
+    return std::string(buff);
 }
 
 char* Utils::generateRandom(int size)

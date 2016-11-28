@@ -50,7 +50,8 @@ void AuthServeHandler::createAccount(std::string& _return, const std::string& us
     logDebug << std::string("Database returned error: ") + errFromDb;
     if(errFromDb.size() == 0)
     {
-        _return = Utils::hex(key,32);
+        //_return = Utils::hex(key,32);
+        _return = std::string(key,32);
     }
     else
     {

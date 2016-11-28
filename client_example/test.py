@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import sys
 import glob
+import binascii
 
 
 # To run this, you need to generate the Python thrift files
@@ -25,5 +26,6 @@ client = AuthServe.Client(proto)
 
 
 trans.open()
-print client.createAccount("testing", {'email':'testing@test.com'})
+byteIn = client.createAccount("testing", {'email':'testing@test.com'})
+print binascii.hexlify(bytearray(byteIn))
 trans.close()
