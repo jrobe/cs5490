@@ -85,9 +85,10 @@ char* Utils::decrypt(char* data, int dataLen, char* key, int keyLen, int& outLen
 std::string Utils::hex(char* data,int len)
 {
     char buff[(len * 2) +1];
+    memset(buff,(len*2) +1,'\0');
     for(int i = 0; i < len; i++)
     {
-        sprintf(buff + (i * 2),"%02X",data[i]);
+        sprintf(buff + (i * 2),"%02X",(unsigned char)data[i]);
     }
     buff[len*2] = '\0';
     return std::string(buff);
