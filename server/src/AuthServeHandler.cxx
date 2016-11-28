@@ -66,10 +66,13 @@ void AuthServeHandler::createAccount(std::string& _return, const std::string& us
     delete[] key;
 }
 
-void AuthServeHandler::retrieveWithKey(std::map<std::string, std::string> & _return, const std::string& userName, const std::string& key) {
+void AuthServeHandler::retrieveWithKey(std::map<std::string, std::string> & _return, const std::string& userName, const std::string& key) 
+{
     // Your implementation goes here
     logDebug << "Retrieving from the database with a key";
     int len = 0 ;
-    char* encryptedData = _db.getEncryptedUserData(userName,len);
-  }
+    char* encryptedData = _db.getEncryptedUserData(userName,len); //hex
+    _return = std::string(encryptedData,len);
+
+}
 
