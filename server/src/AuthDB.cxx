@@ -34,6 +34,8 @@ AuthDB::AuthDB(const std::string& dbfile)
 static int _callback(void*, int argc, char** argv, char** colName)
 {
     //Hacky; but works for now logDebug << "Calling Handler";
+    //This could be remedied nicely if you were able to pass a lambda as a function pointer easier than the hacks I've seen.
+    //For now, and because I don't care, just go ahead and assume you're a single-threaded singleton
     AuthDB::_currentHandler(argc,argv,colName);
     return 0;
 }
