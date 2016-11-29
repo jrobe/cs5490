@@ -207,6 +207,7 @@ std::string AuthDB::insertUser(const std::string& user, const std::string& encry
 }
 char* AuthDB::getEncryptedUserData(const std::string& user,int& len)
 {
+    resetHandler;
     std::promise<std::string> existPromise;
     auto fut = existPromise.get_future();
     if(!checkIfUserExists(user))
@@ -216,14 +217,13 @@ char* AuthDB::getEncryptedUserData(const std::string& user,int& len)
     }
     _currentHandler = [&existPromise] (int argc, char** argv, char**)
     {
-        logDebug << "Handler called";
+        logDebug << "Handler called for getting encrypted user data";
         assert(argc == 1);
         logDebug << std::string("resulting data: ") + argv[0];
         existPromise.set_value(std::string(argv[0]));
     };
 
     logDebug << "Grabbing encrypted user Data";
-    resetHandler;
     sqlite3_stmt* stmt = nullptr;
     std::string stmtStr = "SELECT data from users WHERE userName = ?1";
     sqlite3_prepare_v2(_db,stmtStr.c_str(),-1,&stmt,NULL);
@@ -245,6 +245,7 @@ char* AuthDB::getEncryptedUserData(const std::string& user,int& len)
         memcpy(out,outData.c_str(),outData.size());
         out[outData.size()] = '\0';
         len = outData.size();
+        logDebug << "Returning from getEncrypted";
         return out;
 
     }

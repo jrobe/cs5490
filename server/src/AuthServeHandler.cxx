@@ -79,12 +79,16 @@ std::map<std::string,std::string> AuthServeHandler::_retrieveValues(const std::s
     }
 
     int len = 0 ;
+    logDebug << "Getting encrypted user data";
     char* encryptedData = _db.getEncryptedUserData(userName,len); //hex
 
-    int outLen = 0;;
+
+    int outLen = 0;
+    logDebug << "Converting encrypted data from Hex";
     byte* encryptedRaw = Utils::fromHex(encryptedData,len,outLen);
 
     int decLen = 0;
+    logDebug << "Decrypting the encrypted data";
     byte* decrypted = Utils::decrypt((byte*)encryptedRaw,outLen,rawKey,32,decLen); 
 
     if(decLen == 0)
@@ -94,29 +98,36 @@ std::map<std::string,std::string> AuthServeHandler::_retrieveValues(const std::s
         throw err;
     }
 
+    logDebug << "Parsing decrypted data";
     std::string decryptedStr((char*)decrypted,decLen); //Assume we stored it correctly
     std::istringstream ssi(decryptedStr);
     std::string token;
     std::map<std::string,std::string> _out;
+    //TODO: This will obviously break if you have any ; or : in your data; do better serialization for the database.
     while(std::getline(ssi,token,';'))
     {
-        logDebug << token;
+        logDebug << std::string("Split on ; : ") + token;
         std::string innerToken;
         std::istringstream innerSsi(token);
         std::vector<std::string> tmpVec;
         while(std::getline(innerSsi,innerToken,':'))
         {
+            logDebug << std::string("Got on tVec: ") + innerToken;
             tmpVec.push_back(innerToken);
         }
-        if(tmpVec.size() != 2)
+        if(tmpVec.size() == 2)
         {
-            error err;
-            err.reason = "Corrupt data in the database (bad decrypt?)";
-            throw err;
+            _out[tmpVec[0]] = tmpVec[1];
         }
-        _out[tmpVec[0]] = tmpVec[1];
     }
     
+    if(_out.size() == 0)
+    {
+        logError << "Bad decrypt? Corrupt data!";
+        error err;
+        err.reason = "Corrupt data in the database (bad decrypt?)";
+        throw err;
+    }
     return std::move(_out);
 
     
@@ -168,7 +179,7 @@ long long AuthServeHandler::_generateId(PermissionRequest& perm)
     while(_activeRequests.find(candidate) != _activeRequests.end())
         candidate = rand();
 
-    perm.requestID = candidate;
+    perm.__set_requestID(candidate);
     _activeRequests[candidate] = perm; //copy
 
     return candidate;
@@ -187,14 +198,14 @@ void AuthServeHandler::requestPermission(PermissionRequest& _return, const std::
     }
 
     
-    _return.user =  userName;
+    _return.__set_user(userName);
     //Not strictly required
-    _return.granted = false;
-    _return.reason = "test";
+    _return.__set_granted(false);
+    _return.__set_reason("test");
     long long id = _generateId(_return); //do this last always; since we pass by reference, it will not copy anything else; we will be dumping this on the floor when we are done.
     logDebug << std::string("Requesting permission; assigned ID: ") + Utils::fromNumber(id);
     _pendingIds.push_back(id);
-    _return.requestID = id;
+    _return.__set_requestID(id);
 
 }
 
@@ -235,12 +246,12 @@ void AuthServeHandler::decideRequest(const PermissionRequest& request, const boo
             throw err;
         }
 
-        req.results = _retrieveValues(key,req.user);
+        req.__set_results(_retrieveValues(key,req.user));
 
     }
 
-    req.granted = decision;
-    req.reason = reason;
+    req.__set_granted(decision);
+    req.__set_reason(reason);
     _pendingResponses.push_back(request.requestID);
 }
 
