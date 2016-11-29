@@ -31,7 +31,7 @@ client = AuthServe.Client(proto)
 def run(good):
     testUserName = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
     trans.open()
-    hexKey = client.createAccount(testUserName, {'email':'testing@test.com'})
+    hexKey = client.createAccount(testUserName, {'email':'testing@test.com', 'cc' : '1234-5555-5555-5555', 'dob' : '1969-12-28'})
     print "Key: " + hexKey
 
 
