@@ -190,10 +190,11 @@ void AuthServeHandler::requestPermission(PermissionRequest& _return, const std::
     _return.user =  userName;
     //Not strictly required
     _return.granted = false;
-    _return.reason = "";
+    _return.reason = "test";
     long long id = _generateId(_return); //do this last always; since we pass by reference, it will not copy anything else; we will be dumping this on the floor when we are done.
+    logDebug << std::string("Requesting permission; assigned ID: ") + Utils::fromNumber(id);
     _pendingIds.push_back(id);
-
+    _return.requestID = id;
 
 }
 
@@ -210,8 +211,11 @@ void AuthServeHandler::checkForPermissionRequests(std::vector<PermissionRequest>
 
 void AuthServeHandler::decideRequest(const PermissionRequest& request, const bool decision, const std::string& reason, const std::string& key) {
     // This is what the portal sends to the server to let it know it's decision about the request
-    logDebug << "decideRequest";
-    if(_activeRequests.find(request.requestID) != _activeRequests.end())
+    logDebug << std::string("decideRequest for ID: ") + Utils::fromNumber(request.requestID);
+    logDebug << std::string("Decide reason: ") + reason;
+    logDebug << std::string("Decide key: ") + key;
+
+    if(_activeRequests.find(request.requestID) == _activeRequests.end())
     {
         logError << "That request doesn't exist...";
         error err;
@@ -219,6 +223,7 @@ void AuthServeHandler::decideRequest(const PermissionRequest& request, const boo
         throw  err;
     }
 
+    logDebug << std::string("Deciding for request: ") + Utils::fromNumber(request.requestID);
     PermissionRequest& req = _activeRequests.at(request.requestID);
     if(decision)
     {

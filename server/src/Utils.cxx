@@ -126,3 +126,10 @@ byte* Utils::generateRandom(int size)
     }
     return out;
 }
+
+std::string Utils::fromNumber(int64_t num)
+{
+    std::stringstream ss;
+    ss << num;
+    return ss.str();
+}

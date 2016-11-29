@@ -17,6 +17,8 @@ struct Utils
     static std::string hex(byte* data,int len);
     static byte* generateRandom(int size);
     static byte* fromHex(const char* data,int len, int& outLen);
+
+    static std::string fromNumber(int64_t num);
 };
 
 #endif
