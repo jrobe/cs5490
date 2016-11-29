@@ -26,7 +26,8 @@ void AuthServeHandler::createAccount(std::string& _return, const std::string& us
     for(auto it = keyValues.begin(); it != keyValues.end(); it++)
     {
         //Could do JSON; lazy
-        ss << it->first << ":" << it->second << ";";
+        if(it->second.size() != 0 && it->first.size() != 0)
+            ss << it->first << ":" << it->second << ";";
     }
     byte* key = Utils::generateRandom(32);
     std::string data = ss.str();
@@ -66,6 +67,61 @@ void AuthServeHandler::createAccount(std::string& _return, const std::string& us
     delete[] key;
 }
 
+std::map<std::string,std::string> AuthServeHandler::_retrieveValues(const std::string& key,const std::string& userName)
+{
+    int keyLen = 0;
+    byte* rawKey = Utils::fromHex(key.c_str(),key.size(),keyLen);
+    if(keyLen != 32)
+    {
+        error err;
+        err.reason = "Invalid key, should be 32 bytes";
+        throw err;
+    }
+
+    int len = 0 ;
+    char* encryptedData = _db.getEncryptedUserData(userName,len); //hex
+
+    int outLen = 0;;
+    byte* encryptedRaw = Utils::fromHex(encryptedData,len,outLen);
+
+    int decLen = 0;
+    byte* decrypted = Utils::decrypt((byte*)encryptedRaw,outLen,rawKey,32,decLen); 
+
+    if(decLen == 0)
+    {
+        error err;
+        err.reason = "Invalid decryption; corrupt key";
+        throw err;
+    }
+
+    std::string decryptedStr((char*)decrypted,decLen); //Assume we stored it correctly
+    std::istringstream ssi(decryptedStr);
+    std::string token;
+    std::map<std::string,std::string> _out;
+    while(std::getline(ssi,token,';'))
+    {
+        logDebug << token;
+        std::string innerToken;
+        std::istringstream innerSsi(token);
+        std::vector<std::string> tmpVec;
+        while(std::getline(innerSsi,innerToken,':'))
+        {
+            tmpVec.push_back(innerToken);
+        }
+        if(tmpVec.size() != 2)
+        {
+            error err;
+            err.reason = "Corrupt data in the database (bad decrypt?)";
+            throw err;
+        }
+        _out[tmpVec[0]] = tmpVec[1];
+    }
+    
+    return std::move(_out);
+
+    
+}
+
 void AuthServeHandler::retrieveWithKey(std::map<std::string, std::string> & _return, const std::string& userName, const std::string& key) 
 {
     //Key should be in hex
@@ -95,23 +151,103 @@ void AuthServeHandler::retrieveWithKey(std::map<std::string, std::string> & _ret
 
 }
 
+/*
+struct PermissionRequest
+{
+    1: optional string user;
+    2: optional i64 requestID;
+    3: optional bool granted;
+    4: optional string reason;
+    5: optional map<string,string> results;
+}
+*/
+
+long long AuthServeHandler::_generateId(PermissionRequest& perm)
+{
+    long long candidate = rand();
+    while(_activeRequests.find(candidate) != _activeRequests.end())
+        candidate = rand();
+
+    perm.requestID = candidate;
+    _activeRequests[candidate] = perm; //copy
+
+    return candidate;
+}
 
 void AuthServeHandler::requestPermission(PermissionRequest& _return, const std::string& userName) {
-    // Your implementation goes here
-    printf("requestPermission\n");
+    //The Demo app will request permission here;
+    logDebug << "requestPermission";
+    // just generate the permissionRequest
+    if(!_db.checkIfUserExists(userName))
+    {
+        logError << "Requesting permission for a user that doesn't exist!";
+        error err;
+        err.reason = "The user doesn't exist to request permission for";
+        throw  err;
+    }
+
+    
+    _return.user =  userName;
+    //Not strictly required
+    _return.granted = false;
+    _return.reason = "";
+    long long id = _generateId(_return); //do this last always; since we pass by reference, it will not copy anything else; we will be dumping this on the floor when we are done.
+    _pendingIds.push_back(id);
+
+
 }
 
 void AuthServeHandler::checkForPermissionRequests(std::vector<PermissionRequest> & _return) {
-    // Your implementation goes here
-    printf("checkForPermissionRequests\n");
+    //logDebug << "Checking for permission requests";
+    // This is the fake push ( really poll) that the portal does 
+    for(long long id : _pendingIds)
+    {
+        //Ensure that these don't go out of sync somehow.
+        _return.push_back(_activeRequests.at(id));
+    }
+    _pendingIds.clear();
 }
 
 void AuthServeHandler::decideRequest(const PermissionRequest& request, const bool decision, const std::string& reason, const std::string& key) {
-    // Your implementation goes here
-    printf("decideRequest\n");
+    // This is what the portal sends to the server to let it know it's decision about the request
+    logDebug << "decideRequest";
+    if(_activeRequests.find(request.requestID) != _activeRequests.end())
+    {
+        logError << "That request doesn't exist...";
+        error err;
+        err.reason = "That request doesn't exist...";
+        throw  err;
+    }
+
+    PermissionRequest& req = _activeRequests.at(request.requestID);
+    if(decision)
+    {
+        //We have decided yes; decrypt with the key at this point, and store in the request.
+        if(key.size() == 0)
+        {
+            error err;
+            err.reason = "You decided yes, but failed to provide a key...";
+            throw err;
+        }
+
+        req.results = _retrieveValues(key,req.user);
+
+    }
+
+    req.granted = decision;
+    req.reason = reason;
+    _pendingResponses.push_back(request.requestID);
 }
 
 void AuthServeHandler::checkForPermissionGranted(PermissionRequest& _return, const int64_t requestID) {
-    // Your implementation goes here
-    printf("checkForPermissionGranted\n");
+    // The debug app will check to see if it got permission here, the results will be returned in the _return if it is.
+    //logDebug << "checkForPermissionGranted";
+    //if(_pendingResponses.find(requestID) != _pendingResponses.end())
+    if(std::find(_pendingResponses.begin(),_pendingResponses.end(),requestID) != _pendingResponses.end())
+    {
+        _return = _activeRequests[requestID];
+        _activeRequests.erase(requestID);
+        auto found = std::find(_pendingResponses.begin(),_pendingResponses.end(),requestID);
+        _pendingResponses.erase(found);
+    }
 }

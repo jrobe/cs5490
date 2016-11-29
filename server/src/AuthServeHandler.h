@@ -17,7 +17,8 @@
 #include <thrift/transport/TSSLServerSocket.h>
 #include <thrift/transport/TBufferTransports.h>
 
-#include <tuple>
+#include <map>
+#include <vector>
 
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
@@ -42,6 +43,11 @@ class AuthServeHandler : virtual public cs::AuthServeIf {
 
     private:
         AuthDB _db;
+        std::map<std::string,std::string> _retrieveValues(const std::string& key,const std::string& userName);
+        long long _generateId(PermissionRequest&);
+        std::map<long long,PermissionRequest> _activeRequests;
+        std::vector<long long> _pendingIds;
+        std::vector<long long> _pendingResponses;
 
 };
 

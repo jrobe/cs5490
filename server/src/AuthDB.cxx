@@ -145,7 +145,7 @@ bool AuthDB::_execute(sqlite3_stmt* stmt)
 
 }
 
-bool AuthDB::_checkIfUserExists(const std::string& user)
+bool AuthDB::checkIfUserExists(const std::string& user)
 {
     std::promise<bool> existPromise;
     auto fut = existPromise.get_future();
@@ -177,7 +177,7 @@ std::string AuthDB::insertUser(const std::string& user, const std::string& encry
 {
     logDebug << "Inserting user into the database...";
     //Check if user exists first
-    if(_checkIfUserExists(user))
+    if(checkIfUserExists(user))
     {
         logError << "User already exists!";
         return "User already exists!";
@@ -209,7 +209,7 @@ char* AuthDB::getEncryptedUserData(const std::string& user,int& len)
 {
     std::promise<std::string> existPromise;
     auto fut = existPromise.get_future();
-    if(!_checkIfUserExists(user))
+    if(!checkIfUserExists(user))
     {
         logError << "User didn't exist when attempting to get user data";
         return nullptr;
