@@ -1,5 +1,5 @@
 namespace cpp cs
-
+namespace java cs
 
 exception error
 {

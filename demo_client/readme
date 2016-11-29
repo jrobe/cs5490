@@ -1,0 +1,6 @@
+$ thrift -gen java ../thrift/cs5490.thrift
+$ mvn package
+
+This should place a .jar file in the ./target directory that you can run. 
+
+(this mayyyy work in Eclipse... But I just use the command line and VS Code with the Java plugin.)
