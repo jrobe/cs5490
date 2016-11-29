@@ -2,6 +2,8 @@
 import sys
 import glob
 import binascii
+import random
+import string
 
 
 # To run this, you need to generate the Python thrift files
@@ -25,10 +27,30 @@ proto = TBinaryProtocol.TBinaryProtocol(trans_buf)
 client = AuthServe.Client(proto)
 
 
+testUserName = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
+
 trans.open()
-byteIn = client.createAccount("testing", {'email':'testing@test.com'})
-print binascii.hexlify(bytearray(byteIn))
-print client.retreiveWithKey
+hexKey = client.createAccount(testUserName, {'email':'testing@test.com'})
+print "Key: " + hexKey
+
+
+#Demo
+request = client.requestPermission(testUserName)
+print 'Request ID: ' + str(request.requestID)
+print request
+
+#Portal
+portalRequests = client.checkForPermissionRequests()
+for pr in portalRequests:
+    pr.requestID = request.requestID
+    client.decideRequest(pr,True,"Access Granted",hexKey)
+
+#demo
+result = client.checkForPermissionGranted(request.requestID)
+
+
+for key in result.results.keys():
+    print key + " => " + result.results[key]
 
 trans.close()
 
