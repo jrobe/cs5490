@@ -27,30 +27,37 @@ proto = TBinaryProtocol.TBinaryProtocol(trans_buf)
 client = AuthServe.Client(proto)
 
 
-testUserName = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
 
-trans.open()
-hexKey = client.createAccount(testUserName, {'email':'testing@test.com'})
-print "Key: " + hexKey
+def run(good):
+    testUserName = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
+    trans.open()
+    hexKey = client.createAccount(testUserName, {'email':'testing@test.com'})
+    print "Key: " + hexKey
 
 
 #Demo
-request = client.requestPermission(testUserName)
-print 'Request ID: ' + str(request.requestID)
-print request
+    request = client.requestPermission(testUserName)
+    print 'Request ID: ' + str(request.requestID)
+    print request
 
 #Portal
-portalRequests = client.checkForPermissionRequests()
-for pr in portalRequests:
-    pr.requestID = request.requestID
-    client.decideRequest(pr,True,"Access Granted",hexKey)
+    portalRequests = client.checkForPermissionRequests()
+    for pr in portalRequests:
+        pr.requestID = request.requestID
+        client.decideRequest(pr,good,"Access Granted",hexKey)
 
 #demo
-result = client.checkForPermissionGranted(request.requestID)
+    result = client.checkForPermissionGranted(request.requestID)
 
 
-for key in result.results.keys():
-    print key + " => " + result.results[key]
+    if result.granted:
+        for key in result.results.keys():
+            print key + " => " + result.results[key]
+    else:
+        print 'Permission denied!'
 
-trans.close()
+    trans.close()
 
+
+run(True)
+run(False)
