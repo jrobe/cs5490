@@ -1,0 +1,5 @@
+{
+    "sourcePath": ["src/main/java", "gen-java"],
+    "classPathFile": "classpath.txt",
+    "outputDirectory": "target"
+}
