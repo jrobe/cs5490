@@ -1,5 +1,5 @@
 #ifndef __Globals_h__
-#define __GLobals_h__
+#define __Globals_h__
 
 #include <iostream>
 
