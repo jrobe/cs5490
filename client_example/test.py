@@ -28,11 +28,8 @@ client = AuthServe.Client(proto)
 
 
 
-def run(good):
-    testUserName = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
+def run(testUserName):
     trans.open()
-    hexKey = client.createAccount(testUserName, {'email':'testing@test.com', 'cc' : '1234-5555-5555-5555', 'dob' : '1969-12-28'})
-    print "Key: " + hexKey
 
 
 #Demo
@@ -40,11 +37,7 @@ def run(good):
     print 'Request ID: ' + str(request.requestID)
     print request
 
-#Portal
-    portalRequests = client.checkForPermissionRequests()
-    for pr in portalRequests:
-        pr.requestID = request.requestID
-        client.decideRequest(pr,good,"Access Granted",hexKey)
+    raw_input("Press Enter to continue...")
 
 #demo
     result = client.checkForPermissionGranted(request.requestID)
@@ -58,6 +51,5 @@ def run(good):
 
     trans.close()
 
-
-run(True)
-run(False)
+username = raw_input("Enter a username: ")
+run(username)
