@@ -10,7 +10,7 @@
 
 //Thrift libraries
 #include <thrift/protocol/TBinaryProtocol.h>
-#include <thrift/server/TSimpleServer.h>
+#include <thrift/server/TThreadedServer.h>
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TSSLSocket.h>
 #include <thrift/transport/TSSLServerSocket.h>
@@ -60,7 +60,7 @@ int main()
     boost::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
     boost::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
 
-    TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
+    TThreadedServer server(processor, serverTransport, transportFactory, protocolFactory);
 
     server.serve();
 
