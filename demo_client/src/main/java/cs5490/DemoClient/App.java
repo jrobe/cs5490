@@ -66,7 +66,6 @@ public class App implements RequestCheckCallback, LogoutCallback{
 			TProtocol protocol = new  TBinaryProtocol(transport);
 			AuthServe.Client client = new AuthServe.Client(protocol);
 			pr = client.requestPermission(username);
-			System.out.println(pr.requestID);
 			transport.close();
 			userNameField.setEditable(false);
 			userNameField.setEnabled(false);
