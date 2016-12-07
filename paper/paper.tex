@@ -2,6 +2,7 @@
 \usepackage{epsfig,xspace,url}
 \usepackage{authblk}
 \usepackage{graphicx}
+\usepackage{listings}
 \graphicspath{ {images/} }
 
 \title{Third Party Encrypted Storage}
@@ -10,13 +11,27 @@
 
 \begin{document}
 
+%Code listing formatting
+\lstdefinestyle{codestyle}{
+    basicstyle=\footnotesize,
+    frame=single,
+    breaklines=true
+}
+\lstset{style=codestyle}
+
+
 \maketitle
 
 \section{Introduction}
 
+Remembering a good password is hard. Unsurpsingly most people take the path of least resistence, and simply don't use good passwords. Frequently user passwords consist of personal information or absolutely simple ones to guess like \textit{1234}\cite{easypass}. Many organizations require that you use certain combinations of letters, numbers, and symbols. This frequently annoys users, as it makes passwords more difficult to use. Given this constraint on passwords, many users make one password that will satisfy many of the complexity requirements for most passwords, and simply use that everywhere. This is possibly worse than a simple password, as once one of those are compromised, and this happens with somewhat alarming frequency\cite{databreach}, the attacker has access to all of your other accounts.
+
+There are a few current solutions to this. One of the most common allows you to log in to services using an API provided by many commonly used services like Facebook, Google, and Twitter. This requires integration on the services part to use the third party API. This presents a new problem, now those third-party services have all your information about what services you use, as well as holding a lot of Personal Identifiable information (PII). Many users don't like the idea of these third-party services having so much personal information about them, and thus don't even use them, or don't want to use them to log into other services.
+
+
 \section{Design}
 
-Add basic idea here
+Our solution to this problem is to not use passwords at all. In a sentence, instead of the users remembering passwords, the device the user uses does for him. Since a computer doesn't have the memory limitations a human does, it can have absolutely random passwords of sufficiently large length.
 
 See figure \ref{design}.
 
@@ -45,6 +60,13 @@ Our basic design consists of four entities
 \caption{Message Flow}
 \end{figure}
 
+\paragraph{RPCs and Message Formats}
+    We chose to use Thrift\cite{thrift} as our RPC\footnote{remote procedure call} and message formatting framework. We chose this primarily because it allows for multiple different output languages from it's initial IDL\footnote{interface definition language}. The way Thrift works is you define a set of structures and functions in an IDL, and then compile it to the various langauges you wish to use it in. A snippet of our Thrift IDL file:
+
+\begin{minipage}{\linewidth}
+\lstinputlisting[firstline=0,lastline=22]{../thrift/cs5490.thrift}
+\end{minipage}
+
 \subsection{Authentication Server}
     The authentication server deals with holding the encrypted data. It is relatively simple, as it merely has to hold a 2 column table, and provide the ability to decrypt with a given key. The server provides this functionality through Apache Thrift\cite{thrift}. It provides some simple functions:
     \begin{itemize}
@@ -55,7 +77,7 @@ Our basic design consists of four entities
         \item \textbf{checkForPermissionGranted} - The demo application can poll with a requerst ID to see if their request has been confirmed or denied.
     \end{itemize}
 
-The backend storage is SQLite, given the simple nature of the data.
+The backend storage is SQLite, given the simple nature of the data. This could have also been done in a key-value pair database, however, that would have required setting up another server for this.
 \subsection{Portal Application}
 \subsection{Demo Application}
 
