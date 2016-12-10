@@ -22,6 +22,7 @@
 
 \maketitle
 
+%Introduction  –  Motivate  and  introduce  the  problem  you  are  solving.  Very briefly summarize your methodology, your experiments, and your important results.
 \section{Introduction}
 
 Remembering a good password is hard. Unsurpsingly most people take the path of least resistence, and simply don't use good passwords. Frequently user passwords consist of personal information or absolutely simple ones to guess like \textit{1234}\cite{easypass}. Many organizations require that you use certain combinations of letters, numbers, and symbols. This frequently annoys users, as it makes passwords more difficult to use. Given this constraint on passwords, many users make one password that will satisfy many of the complexity requirements for most passwords, and simply use that everywhere. This is possibly worse than a simple password, as once one of those are compromised, and this happens with somewhat alarming frequency\cite{databreach}, the attacker has access to all of your other accounts.
@@ -29,6 +30,17 @@ Remembering a good password is hard. Unsurpsingly most people take the path of l
 There are a few current solutions to this. One of the most common allows you to log in to services using an API provided by many commonly used services like Facebook, Google, and Twitter. This requires integration on the services part to use the third party API. This presents a new problem, now those third-party services have all your information about what services you use, as well as holding a lot of Personal Identifiable information (PII). Many users don't like the idea of these third-party services having so much personal information about them, and thus don't even use them, or don't want to use them to log into other services.
 
 
+%Related work – Summarize the existing work related to your problem.
+\section{Related Work}
+
+%Adversary model – Describe the adversary you are securing against.
+\section{Adversary Model}
+    We look at our problem from multiple angles...
+
+
+
+
+%Methodology – Describe your solution and any other methods you have used to solve your problem.
 \section{Design}
 
 Our solution to this problem is to not use passwords at all. In a sentence, instead of the users remembering passwords, the device the user uses does for him. Since a computer doesn't have the memory limitations a human does, it can have absolutely random passwords of sufficiently large length.
@@ -51,15 +63,6 @@ Our basic design consists of four entities
 \end{figure*}
 
 
-
-\section{Implemention}
-%TODO Probably add more here between the example run through and the first sentence
-    We chose to write our demo application in three parts: the server, the portal, and the demo application. An example run through of our application would like like so:
-\begin{figure}[ht]
-\includegraphics[width=0.45\textwidth]{messageDiagram}
-\caption{Message Flow}
-\end{figure}
-
 \paragraph{RPCs and Message Formats}
     We chose to use Thrift\cite{thrift} as our RPC\footnote{remote procedure call} and message formatting framework. We chose this primarily because it allows for multiple different output languages from it's initial IDL\footnote{interface definition language}. The way Thrift works is you define a set of structures and functions in an IDL, and then compile it to the various langauges you wish to use it in. A snippet of our Thrift IDL file:
 
@@ -81,11 +84,23 @@ The backend storage is SQLite, given the simple nature of the data. This could h
 \subsection{Portal Application}
 \subsection{Demo Application}
 
-\section{Alterative Methods}
+%Describe  your  experiments  and  your results. Discuss your results.
+\section{Implemention}
+    We chose to write our demo application in three parts: the server, the portal, and the demo application. An example run through of our application would like like so:
+\begin{figure}[ht]
+\includegraphics[width=0.45\textwidth]{messageDiagram}
+\caption{Message Flow}
+\end{figure}
+
+% Summarize  your  work  and  your  results.  Indicated  any  future directions.
+\section{Conclusion}
+    Add conclusion
+\subsection{Alterative Methods}
 
 Talk about how we could have done a few things differently, like having the portal generate the key and then send it to the server, as this would have allowed it to generate it from a password and not have to even talk to the server.
 
 
+%List all the references you have used for this work.
 {
     \small
     \bibliographystyle{acm}
