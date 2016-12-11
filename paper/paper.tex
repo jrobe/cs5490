@@ -64,6 +64,9 @@ Our basic design consists of four entities; see Figure \ref{design}.
 \label{design}
 \end{figure*}
 
+We chose to split the Authentication server and the Portal application to mitigate risk in the event of a database breach. In the case where the database was compromised, the attacker would still not have the key required to decrypt any of the data. The Portal application itself also doesn't always hold the key. Instead, the cache on the client device holds the key, and will send it through the portal on to the authentication server, in both cases, the encryption key is forgotten after use.
+
+%TODO Perhaps had more design choices?
 
 An example of a successful authentication is shown in Figure \ref{messageflow}. You can see here that from our user, Bob's, perspective that he only has to answer a permission question, and the most of the burden is taken care for him outside of his view.
 
