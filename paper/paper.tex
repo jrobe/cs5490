@@ -114,7 +114,7 @@ Both the Portal and Demo application were written in Java, also using Thrift. \d
 
 \subsection{Alterative Methods}
 
-What we have done is essentially shift the problem from \textit{what you know} to \textit{what you have} \cite[Chapter~9]{privcomm}. This method has its own unique set of problems. What if the user loses their device? They are suddenly out of their password, so some kind of \textit{what you know} approach would seem to be required here as well, if only to recover the data in the case of a lost device.
+What we have done is essentially shift the problem from \textit{what you know} to \textit{what you have} \cite[Chapter~9]{privcomm}. This method has its own unique set of problems. What if the user loses their device? They are suddenly without access to their information, so some kind of \textit{what you know} approach would seem to be required here as well, if only to recover the data in the case of a lost device.
 
 It's also possible to shift the decryption of the data away from the server. Instead of having the server decrypt the data. Have it act as dumb data storage, and instead forward encrypted data to the clients device. The client device could then decrypt it locally and send it to the application that requested it. In this way, you are really just storing your encrypted data \textit{in the cloud}, and retrieving it from one or more devices. 
 
