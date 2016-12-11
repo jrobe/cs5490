@@ -27,7 +27,7 @@
 %Introduction  –  Motivate  and  introduce  the  problem  you  are  solving.  Very briefly summarize your methodology, your experiments, and your important results.
 \section{Introduction}
 
-Remembering a good password is hard. Unsurprisingly most people take the path of least resistance, and simply don't use good passwords. Frequently user passwords consist of personal information or absolutely simple ones to guess like \textit{1234}\cite{easypass}. Many organizations require that you use certain combinations of letters, numbers, and symbols. This frequently annoys users, as it makes passwords more difficult to use. Given this constraint on passwords, many users make one password that will satisfy many of the complexity requirements for most passwords, and simply use that everywhere. This is possibly worse than a simple password, as once one of those are compromised, and this happens with somewhat alarming frequency\cite{databreach}, the attacker has access to all of your other accounts.
+Remembering a good password is hard. Unsurprisingly most people take the path of least resistance, and simply don't use good passwords. Frequently user passwords consist of personal information or absolutely simple ones to guess like \textit{1234}\cite{easypass}. Many organizations require that you use certain combinations of letters, numbers, and symbols. This frequently annoys users, as it makes passwords more difficult to use. Given this constraint on passwords, many users make one password that will satisfy many of the complexity requirements for most passwords, and simply use that everywhere. This is possibly worse than a simple password, as once one of those are compromised, and this happens with somewhat alarming frequency\cite{databreach}, the attacker has access to all of your other accounts. Even the most secure password policies are vulnerable against social engineering and phishing. A recent survey determined that 42\% of IT decision makers listed phishing as one of their top three security concerns\cite{phishing}. Training employees to avoid phishing attacks is also expensive and not 100\% effective.
 
 There are a few current solutions to this. One of the most common allows you to log in to services using an API provided by many commonly used services like Facebook, Google, and Twitter. This requires integration on the services part to use the third party API. This presents a new problem, now those third-party services have all your information about what services you use, as well as holding a lot of Personal Identifiable information (PII). Many users don't like the idea of these third-party services having so much personal information about them, and thus don't even use them, or don't want to use them to log into other services.
 
@@ -41,15 +41,16 @@ Thus, we chose to not use passwords at all, at least, not in the traditional sen
 \section{Adversary Model}
     We look at our problem from multiple attack vectors:
     \begin{itemize}
-    \item \textit{Attacker with copy of aatabase} - This is the most basic case, if an adversary gains a copy of the database via some means.
-    \item \textit{Government/Authority} - This is the case where a government or authority subpoenas the database from the authentication server. This subtly different from the first case, as the owner of the database is able to provide any keying information to that authority.
+    \item \textit{Attacker with copy of database} - This is the most basic case, if an adversary gains a copy of the database via some means.
+    \item \textit{Government/Authority} - This is the case where a government or authority subpoenas the database from the authentication server. This subtly different from the first case, as the owner of the database is coerced to provide any keying information to that authority.
     \item \textit{MITM\footnote{Man in the middle; the act of impersonating the server}/Impersonation} - The case where an entity stands in between the user and the server, having the ability to manipulate messages going both ways.
+    \item \textit{Phishing} - Tricking a user into revealing their password.
     \end{itemize}
 
 %Methodology – Describe your solution and any other methods you have used to solve your problem.
 \section{Design}
 
-Our solution to this problem is to not use passwords at all. In a sentence, instead of the users remembering passwords, the device the user uses does for him. Since a computer doesn't have the memory limitations a human does, it can have absolutely random passwords of sufficiently large length. 
+Our solution to this problem is to not use passwords at all. Instead of remembering passwords, a user's device (such as a smartphone) remembers it for him. Since a computer doesn't have the memory limitations a human does, it can have absolutely random passwords of sufficiently large length. 
 
 Our basic design consists of four entities; see Figure \ref{design}.
 \begin{itemize}
@@ -66,7 +67,7 @@ Our basic design consists of four entities; see Figure \ref{design}.
 \label{design}
 \end{figure*}
 
-We chose to split the Authentication server and the Portal application to mitigate risk in the event of a database breach. In the case where the database was compromised, the attacker would still not have the key required to decrypt any of the data. The Portal application itself also doesn't always hold the key. Instead, the cache on the client device holds the key, and will send it through the portal on to the authentication server, in both cases, the encryption key is forgotten after use.
+We chose to split the Authentication server and the Portal application to mitigate risk in the event of a database breach. In the case where the database was compromised, the attacker would still not have the key required to decrypt any of the data. The Portal application will store the key. The portal application may be further protected by the device it is installed on, such as the PIN required to unlock a smartphone. Once the authentication server uses the key, the authentication server forgets the key.
 
 %TODO Perhaps had more design choices?
 
@@ -99,15 +100,19 @@ An example of a successful authentication is shown in Figure \ref{messageflow}. 
     \begin{itemize}
         \item \textbf{createAccount} - Creates the account for the user, and generates the key for it.
         \item \textbf{requestPermission} - The application requesting access will call this function with the requested data fields and user.
-        \item \textbf{checkForPermissionRequest} - Portal can check if it has any pending reqeusts\footnote{In lieu of push notifications, we moved for polling due to time constraints} 
+        \item \textbf{checkForPermissionRequest} - Portal can check if it has any pending requests\footnote{In lieu of push notifications, we moved for polling due to time constraints} 
         \item \textbf{decideRequest} - Once the user decides what they want to do, the portal application will call this with the decision and, if in the affirmative, the key.
-        \item \textbf{checkForPermissionGranted} - The demo application can poll with a requerst ID to see if their request has been confirmed or denied.
+        \item \textbf{checkForPermissionGranted} - The demo application can poll with a request ID to see if their request has been confirmed or denied.
     \end{itemize}
 
 The backend storage is SQLite, given the simple nature of the data. This could have also been done in a key-value pair database, however, that would have required setting up another server for this.
 
 \subsection{Portal and Demo Application}
-Both the Portal and Demo application were written in Java, also using Thrift. \dots EXPAND
+Both the portal and demo application were written in Java, also using Thrift. However, these were only written for the demonstration of the authentication server. Because of Thrift, it would be possible to easily support many other languages. In order for this scheme to be feasible, the portal app would need to run on many different types of devices. Using Thrift, we could create libraries for many programming languages and encourage developers to implement our authentication scheme into their applications.
+
+The portal application has two functionalities. First it provides a form to the user so that they can register a new account with the authentication server. Once an account is created a key is stored on the device and the portal application enters the background. The portal application notifies the user with a pop up whenever a request is created for the user's account.
+
+The demo application is a simple application that asks for your username. Once authenticated, the application displays the user's information in a table. 
 
 
 % Summarize  your  work  and  your  results.  Indicated  any  future directions.
@@ -118,7 +123,7 @@ Both the Portal and Demo application were written in Java, also using Thrift. \d
 
 What we have done is essentially shift the problem from \textit{what you know} to \textit{what you have} \cite[Chapter~9]{privcomm}. This method has its own unique set of problems. What if the user loses their device? They are suddenly without access to their information, so some kind of \textit{what you know} approach would seem to be required here as well, if only to recover the data in the case of a lost device.
 
-It's also possible to shift the decryption of the data away from the server. Instead of having the server decrypt the data. Have it act as dumb data storage, and instead forward encrypted data to the clients device. The client device could then decrypt it locally and send it to the application that requested it. In this way, you are really just storing your encrypted data \textit{in the cloud}, and retrieving it from one or more devices. 
+It's also possible to shift the decryption of the data away from the server. Instead of having the server decrypt the data, it could act as dumb data storage and instead forward encrypted data to the clients device. The client device could then decrypt it locally and send it to the application that requested it. In this way, you are really just storing your encrypted data \textit{in the cloud}, and retrieving it from one or more devices. 
 
 %Talk about how we could have done a few things differently, like having the portal generate the key and then send it to the server, as this would have allowed it to generate it from a password and not have to even talk to the server.
 
