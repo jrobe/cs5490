@@ -25,29 +25,31 @@
 %Introduction  –  Motivate  and  introduce  the  problem  you  are  solving.  Very briefly summarize your methodology, your experiments, and your important results.
 \section{Introduction}
 
-Remembering a good password is hard. Unsurpsingly most people take the path of least resistence, and simply don't use good passwords. Frequently user passwords consist of personal information or absolutely simple ones to guess like \textit{1234}\cite{easypass}. Many organizations require that you use certain combinations of letters, numbers, and symbols. This frequently annoys users, as it makes passwords more difficult to use. Given this constraint on passwords, many users make one password that will satisfy many of the complexity requirements for most passwords, and simply use that everywhere. This is possibly worse than a simple password, as once one of those are compromised, and this happens with somewhat alarming frequency\cite{databreach}, the attacker has access to all of your other accounts.
+Remembering a good password is hard. Unsurprisingly most people take the path of least resistance, and simply don't use good passwords. Frequently user passwords consist of personal information or absolutely simple ones to guess like \textit{1234}\cite{easypass}. Many organizations require that you use certain combinations of letters, numbers, and symbols. This frequently annoys users, as it makes passwords more difficult to use. Given this constraint on passwords, many users make one password that will satisfy many of the complexity requirements for most passwords, and simply use that everywhere. This is possibly worse than a simple password, as once one of those are compromised, and this happens with somewhat alarming frequency\cite{databreach}, the attacker has access to all of your other accounts.
 
 There are a few current solutions to this. One of the most common allows you to log in to services using an API provided by many commonly used services like Facebook, Google, and Twitter. This requires integration on the services part to use the third party API. This presents a new problem, now those third-party services have all your information about what services you use, as well as holding a lot of Personal Identifiable information (PII). Many users don't like the idea of these third-party services having so much personal information about them, and thus don't even use them, or don't want to use them to log into other services.
 
+Thus, we chose to not use passwords at all, at least, not in the traditional sense. We chose to implement a system in which a third party service holds information that would usually be guarded by a user password. This third party service would work with any application that desires to get information, such as a strong password or simply an email, from the user. The user just has to store this cryptographically strong key on their device, and allow access by accepting on a portal application. The portal application unlocks the data on the server temporally, and sends it to the requesting application.  We show that this is feasible with our implementation and removes the need for traditional passwords. 
 
 %Related work – Summarize the existing work related to your problem.
 \section{Related Work}
+\dots\dots\dots\dots
 
 %Adversary model – Describe the adversary you are securing against.
 \section{Adversary Model}
-    We look at our problem from multiple angles...
-
-
-
+    We look at our problem from multiple attack vectors:
+    \begin{itemize}
+    \item \textit{Attacker with copy of aatabase} - This is the most basic case, if an adversary gains a copy of the database via some means.
+    \item \textit{Government/Authority} - This is the case where a government or authority subpoenas the database from the authentication server. This subtly different from the first case, as the owner of the database is able to provide any keying information to that authority.
+    \item \textit{MITM\footnote{Man in the middle; the act of impersonating the server}/Impersonation} - The case where an entity stands in between the user and the server, having the ability to manipulate messages going both ways.
+    \end{itemize}
 
 %Methodology – Describe your solution and any other methods you have used to solve your problem.
 \section{Design}
 
-Our solution to this problem is to not use passwords at all. In a sentence, instead of the users remembering passwords, the device the user uses does for him. Since a computer doesn't have the memory limitations a human does, it can have absolutely random passwords of sufficiently large length.
+Our solution to this problem is to not use passwords at all. In a sentence, instead of the users remembering passwords, the device the user uses does for him. Since a computer doesn't have the memory limitations a human does, it can have absolutely random passwords of sufficiently large length. 
 
-See figure \ref{design}.
-
-Our basic design consists of four entities
+Our basic design consists of four entities; see Figure \ref{design}.
 \begin{itemize}
     \item \textbf{User} - The user that desires to use our application, to store their data securely
     \item \textbf{Authentication Server} - The server that will store the encrypted data for the user, without having the key.
@@ -63,12 +65,29 @@ Our basic design consists of four entities
 \end{figure*}
 
 
-\paragraph{RPCs and Message Formats}
-    We chose to use Thrift\cite{thrift} as our RPC\footnote{remote procedure call} and message formatting framework. We chose this primarily because it allows for multiple different output languages from it's initial IDL\footnote{interface definition language}. The way Thrift works is you define a set of structures and functions in an IDL, and then compile it to the various langauges you wish to use it in. A snippet of our Thrift IDL file:
+An example of a successful authentication is shown in Figure \ref{messageflow}. You can see here that from our user, Bob's, perspective that he only has to answer a permission question, and the most of the burden is taken care for him outside of his view.
 
-\begin{minipage}{\linewidth}
-\lstinputlisting[firstline=0,lastline=22]{../thrift/cs5490.thrift}
-\end{minipage}
+\begin{figure}[ht]
+\includegraphics[width=0.45\textwidth]{messageDiagram}
+\caption{Message Flow}
+\label{messageflow}
+\end{figure}
+
+%Describe  your  experiments  and  your results. Discuss your results.
+\section{Implemention}
+
+\paragraph{RPCs and Message Formats}
+    We chose to use Thrift\cite{thrift} as our RPC\footnote{remote procedure call} and message formatting framework. We chose this primarily because it allows for multiple different output languages from it's initial IDL\footnote{interface definition language}. The way Thrift works is you define a set of structures and functions in an IDL, and then compile it to the various langauges you wish to use it in. 
+    
+%A snippet of our Thrift IDL file:
+
+%\begin{figure}[h]
+%\begin{minipage}{\linewidth}
+%\lstinputlisting[firstline=0,lastline=22]{../thrift/cs5490.thrift}
+%\caption{Example Thrift File}
+%\label{ref:code}
+%\end{minipage}
+%\end{figure}
 
 \subsection{Authentication Server}
     The authentication server deals with holding the encrypted data. It is relatively simple, as it merely has to hold a 2 column table, and provide the ability to decrypt with a given key. The server provides this functionality through Apache Thrift\cite{thrift}. It provides some simple functions:
@@ -81,23 +100,22 @@ Our basic design consists of four entities
     \end{itemize}
 
 The backend storage is SQLite, given the simple nature of the data. This could have also been done in a key-value pair database, however, that would have required setting up another server for this.
-\subsection{Portal Application}
-\subsection{Demo Application}
 
-%Describe  your  experiments  and  your results. Discuss your results.
-\section{Implemention}
-    We chose to write our demo application in three parts: the server, the portal, and the demo application. An example run through of our application would like like so:
-\begin{figure}[ht]
-\includegraphics[width=0.45\textwidth]{messageDiagram}
-\caption{Message Flow}
-\end{figure}
+\subsection{Portal and Demo Application}
+Both the Portal and Demo application were written in Java, also using Thrift. \dots EXPAND
+
 
 % Summarize  your  work  and  your  results.  Indicated  any  future directions.
 \section{Conclusion}
-    Add conclusion
+    We have shown that it's not required for a user to remember passwords to obtain the same goal of only allowing authorized parties access to private information. We did this by implementing a system that holds encrypted user data without holding the key itself. This key is stored on the device, as opposed to being generated by a traditional user password. This mitigates many of the threats presented in our adversary model. In the most simple case, however the adversary obtains the database, its still encrypted. The database, assuming it was correctly programmed, will only have the key for a short period of time, before it dumps it from memory. There is simply no encryption key for the attacker to get, unless they impersonated the authentication server. This case itself is mitigated by the fact that we require SSL on all links.
+
 \subsection{Alterative Methods}
 
-Talk about how we could have done a few things differently, like having the portal generate the key and then send it to the server, as this would have allowed it to generate it from a password and not have to even talk to the server.
+What we have done is essentially shift the problem from \textit{what you know} to \textit{what you have} \cite[Chapter~9]{privcomm}. This method has its own unique set of problems. What if the user loses their device? They are suddenly out of their password, so some kind of \textit{what you know} approach would seem to be required here as well, if only to recover the data in the case of a lost device.
+
+It's also possible to shift the decryption of the data away from the server. Instead of having the server decrypt the data. Have it act as dumb data storage, and instead forward encrypted data to the clients device. The client device could then decrypt it locally and send it to the application that requested it. In this way, you are really just storing your encrypted data \textit{in the cloud}, and retrieving it from one or more devices. 
+
+%Talk about how we could have done a few things differently, like having the portal generate the key and then send it to the server, as this would have allowed it to generate it from a password and not have to even talk to the server.
 
 
 %List all the references you have used for this work.
